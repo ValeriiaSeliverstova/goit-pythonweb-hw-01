@@ -28,4 +28,6 @@ def configure_logging(
 def get_logger(
     name: Optional[str] = None,
 ) -> logging.Logger:  # Optional[str] (typing) або str, або None
-    return logging.getLogger(name)
+    return logging.getLogger(
+        name
+    )  # Повертає об'єкт логера з вказаним ім'ям або кореневий логер, якщо ім'я не вказано. з методами (debug, info, warning, error, critical)
