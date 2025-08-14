@@ -1,9 +1,11 @@
+from pathlib import Path
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from pathlib import Path
-import logging
+from logger import configure_logging, get_logger
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+configure_logging()
+
+logger = get_logger(__name__)
 
 
 # 1:Щоб виконати принцип єдиної відповідальності (SRP), створіть клас Book, який відповідатиме за зберігання інформації про книгу.
@@ -57,7 +59,7 @@ class Library(LibraryInterface):
     def add_book(self, title: str, author: str, year: int) -> None:
         book = Book(title, author, year)
         self.books.append(book)
-        logging.info("Book '%s' by %s (%d) has been added", title, author, year)
+        logger.info("Book '%s' by %s (%d) has been added", title, author, year)
 
     def remove_book(self, title: str) -> None:
         for book in self.books:
@@ -65,12 +67,12 @@ class Library(LibraryInterface):
                 self.books.remove(book)
                 break
         else:
-            logging.info("Book '%s' not found in the library", title)
+            logger.info("Book '%s' not found in the library", title)
             return
 
     def show_books(self) -> None:
         for book in self.books:
-            logging.info(
+            logger.info(
                 "Title: %s, Author: %s, Year: %d", book.title, book.author, book.year
             )
 
@@ -86,7 +88,7 @@ class FileLibrary(Library):
         self.filename.parent.mkdir(parents=True, exist_ok=True)
         if not self.filename.exists():
             self.filename.touch()
-            logging.info("File '%s' created", self.filename)
+            logger.info("File '%s' created", self.filename)
         self.load_books()
 
     def add_book(self, title: str, author: str, year: int) -> None:
@@ -110,18 +112,18 @@ class FileLibrary(Library):
                         title, author, year_str = [p.strip() for p in line.split(",")]
                         self.books.append(Book(title, author, int(year_str)))
                     except Exception:
-                        logging.info("Skip bad line: %r", line)
+                        logger.info("Skip bad line: %r", line)
         except OSError as e:
-            logging.error("Cannot read '%s': %s", self.filename, e)
+            logger.error("Cannot read '%s': %s", self.filename, e)
 
     def save_books(self) -> None:
         try:
             with self.filename.open("w", encoding="utf-8", newline="") as f:
                 for b in self.books:
                     f.write(f"{b.title},{b.author},{b.year}\n")
-            logging.info("Saved %d book(s) to '%s'", len(self.books), self.filename)
+            logger.info("Saved %d book(s) to '%s'", len(self.books), self.filename)
         except OSError as e:
-            logging.error("Cannot write '%s': %s", self.filename, e)
+            logger.error("Cannot write '%s': %s", self.filename, e)
 
 
 def main() -> None:
@@ -139,7 +141,7 @@ def main() -> None:
                 try:
                     year = int(year)
                 except ValueError:
-                    logging.error("Year must be an integer")
+                    logger.error("Year must be an integer")
                     continue
                 manager.add_book(title, author, year)
             case "remove":
@@ -150,7 +152,7 @@ def main() -> None:
             case "exit":
                 break
             case _:
-                logging.info("Invalid command. Please try again.")
+                logger.info("Invalid command. Please try again.")
 
 
 if __name__ == "__main__":
